@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KeyMine AI</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  color: #1a1a1a;
+}
+
+/* ── HEADER ── */
+.header {
+  background: #1a1a1a;
+  color: white;
+  padding: 0 14px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 10px;
+}
+.header-logo {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.logo-badge {
+  font-size: 9px;
+  font-weight: 500;
+  background: rgba(255,255,255,0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+.header-right { display: flex; align-items: center; gap: 8px; }
+.api-key-wrap { position: relative; }
+.api-key-input {
+  background: rgba(255,255,255,0.08);
+  border: 0.5px solid rgba(255,255,255,0.2);
+  border-radius: 7px;
+  color: white;
+  font-size: 11.5px;
+  padding: 6px 10px;
+  width: 210px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+.api-key-input:focus { border-color: rgba(255,255,255,0.5); }
+.api-key-input::placeholder { color: rgba(255,255,255,0.3); }
+.settings-btn {
+  background: rgba(255,255,255,0.08);
+  border: 0.5px solid rgba(255,255,255,0.15);
+  border-radius: 7px;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  padding: 5px 8px;
+  font-size: 15px;
+  line-height: 1;
+  transition: all 0.15s;
+}
+.settings-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+
+/* ── INPUT AREA ── */
+.input-area {
+  flex: 1;
+  padding: 14px;
+  background: #f0f0f2;
+  overflow-y: auto;
+  min-height: 0;
+}
+#mainInput {
+  width: 100%;
+  height: 100%;
+  min-height: 80px;
+  background: white;
+  border: 0.5px solid #e2e2e2;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-family: inherit;
+  line-height: 1.65;
+  color: #1a1a1a;
+  resize: none;
+  outline: none;
+  transition: border-color 0.15s;
+}
+#mainInput:focus { border-color: #c0c0c0; }
+#mainInput::placeholder { color: #bbb; }
+
+/* ── RESULT PANEL ── */
+.result-panel {
+  background: white;
+  border-top: 0.5px solid #ebebeb;
+  padding: 11px 12px 8px;
+  display: none;
+  max-height: 230px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.result-panel.visible { display: block; }
+.result-panel::-webkit-scrollbar { width: 3px; }
+.result-panel::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 3px; }
+
+.section-title {
+  font-size: 10px;
+  color: #aaa;
+  font-weight: 500;
+  margin-bottom: 8px;
+  letter-spacing: 0.2px;
+}
+
+/* Chips */
+.chips-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin-bottom: 10px;
+  padding-bottom: 1px;
+}
+.chips-row::-webkit-scrollbar { display: none; }
+.chip {
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 4px 13px;
+  border-radius: 20px;
+  border: 0.5px solid #d0d0d0;
+  cursor: pointer;
+  white-space: nowrap;
+  background: white;
+  color: #444;
+  transition: all 0.12s;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+.chip:hover { border-color: #999; color: #1a1a1a; }
+.chip.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+.chip-add {
+  border-style: dashed;
+  color: #999;
+}
+.chip-add:hover { color: #555; border-color: #999; }
+
+/* Result cards */
+.result-card {
+  border: 0.5px solid #e8e8e8;
+  border-radius: 11px;
+  padding: 10px 12px;
+  margin-bottom: 7px;
+  position: relative;
+  background: white;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+.result-card.primary { border: 1.5px solid #1a1a1a; }
+.result-card.dimmed { opacity: 0.42; }
+.card-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-bottom: 7px;
+  letter-spacing: 0.1px;
+}
+.tag-spell { background: #E8F5E9; color: #2E7D32; }
+.tag-ctx   { background: #FFF8E1; color: #E65100; }
+.card-actions {
+  position: absolute;
+  top: 10px;
+  right: 11px;
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+.btn-apply {
+  font-size: 11px;
+  color: #1a73e8;
+  font-weight: 600;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+}
+.btn-apply:hover { opacity: 0.75; }
+.btn-dismiss {
+  font-size: 14px;
+  color: #ccc;
+  cursor: pointer;
+  background: none;
+  border: none;
+  line-height: 1;
+  padding: 0;
+}
+.btn-dismiss:hover { color: #888; }
+.card-body {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #1a1a1a;
+  padding-right: 75px;
+}
+.card-reason {
+  font-size: 10.5px;
+  color: #aaa;
+  margin-top: 5px;
+}
+.diff-row {
+  font-size: 11.5px;
+  color: #999;
+  margin-bottom: 5px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.diff-item s { opacity: 0.45; }
+.diff-arrow { color: #1a73e8; margin: 0 2px; font-weight: 600; }
+
+/* Reply cards */
+.reply-card {
+  border: 0.5px solid #e8e8e8;
+  border-radius: 11px;
+  padding: 10px 13px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: white;
+  transition: background 0.1s, border-color 0.1s;
+}
+.reply-card:hover { background: #fafafa; }
+.reply-card.selected { border: 1.5px solid #1a1a1a; }
+.reply-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.reply-tone { font-size: 10px; color: #aaa; margin-bottom: 3px; }
+.reply-text { font-size: 13px; line-height: 1.5; color: #1a1a1a; }
+
+/* Loading */
+.loading-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 22px 0;
+  color: #bbb;
+  font-size: 13px;
+}
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e8e8e8;
+  border-top-color: #1a1a1a;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── AI BUTTONS ── */
+.ai-buttons-wrap {
+  background: #E9E9EB;
+  padding: 7px 10px;
+  border-top: 0.5px solid #d2d2d6;
+  display: flex;
+  gap: 7px;
+  flex-shrink: 0;
+}
+.ai-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 4px;
+  border-radius: 100px;
+  border: 1.5px solid #b8b8b8;
+  background: transparent;
+  color: #1a1a1a;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 0;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.ai-btn:hover { border-color: #888; background: rgba(0,0,0,0.03); }
+.ai-btn.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+.ai-btn.active:hover { background: #333; }
+.ai-btn svg { width: 13px; height: 13px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── KEYBOARD ── */
+.keyboard {
+  background: #D1D5DB;
+  padding: 6px 4px 16px;
+  flex-shrink: 0;
+  user-select: none;
+}
+.kb-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+.key {
+  background: white;
+  border-radius: 5px;
+  font-size: 13px;
+  color: #1a1a1a;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 0 #8a8a8e;
+  flex-shrink: 0;
+  min-width: 28px;
+  padding: 0 2px;
+  pointer-events: none;
+}
+.key-dark {
+  background: #ADB5BD;
+  color: #1a1a1a;
+  font-size: 11px;
+  box-shadow: 0 1px 0 #6b7280;
+}
+.key-space {
+  flex: 1;
+  max-width: 190px;
+  font-size: 12px;
+  color: #555;
+}
+.key-wide { min-width: 44px; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.38);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.modal-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.modal {
+  background: white;
+  border-radius: 18px 18px 0 0;
+  padding: 20px 18px 30px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 78vh;
+  overflow-y: auto;
+  transform: translateY(24px);
+  transition: transform 0.22s cubic-bezier(0.34,1.2,0.64,1);
+}
+.modal-overlay.visible .modal { transform: translateY(0); }
+.modal-handle {
+  width: 36px;
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  margin: 0 auto 18px;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.modal-title { font-size: 17px; font-weight: 700; }
+.modal-close {
+  background: #f0f0f0;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-close:hover { background: #e0e0e0; color: #1a1a1a; }
+
+.form-group { margin-bottom: 13px; }
+.form-label { font-size: 12px; color: #888; margin-bottom: 5px; display: block; font-weight: 500; }
+.form-input, .form-textarea {
+  width: 100%;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: #1a1a1a;
+  outline: none;
+  background: #fafafa;
+  transition: border-color 0.15s, background 0.15s;
+}
+.form-input:focus, .form-textarea:focus {
+  border-color: #aaa;
+  background: white;
+}
+.form-textarea { height: 72px; resize: none; }
+.form-input::placeholder, .form-textarea::placeholder { color: #c8c8c8; }
+
+.btn-save {
+  width: 100%;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 13px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  margin-top: 2px;
+  transition: background 0.15s;
+}
+.btn-save:hover { background: #333; }
+
+.divider {
+  height: 0.5px;
+  background: #f0f0f0;
+  margin: 18px 0 14px;
+}
+.roles-list-title { font-size: 11px; color: #bbb; font-weight: 500; margin-bottom: 10px; }
+.role-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 0.5px solid #f5f5f5;
+  gap: 10px;
+}
+.role-item:last-child { border-bottom: none; }
+.role-info { flex: 1; min-width: 0; }
+.role-name { font-size: 13.5px; font-weight: 500; }
+.role-guide {
+  font-size: 11px;
+  color: #bbb;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.btn-del {
+  font-size: 11.5px;
+  color: #ef5350;
+  background: #fff5f5;
+  border: 0.5px solid #ffcdd2;
+  border-radius: 6px;
+  padding: 4px 9px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-del:hover { background: #ffebee; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: #1a1a1a;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  opacity: 0;
+  transition: all 0.2s;
+  z-index: 300;
+  pointer-events: none;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.err { background: #c62828; }
+.toast.ok  { background: #2e7d32; }
+
+/* Scrollbar global */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-logo">
+    ⌨ KeyMine AI
+    <span class="logo-badge">BETA</span>
+  </div>
+  <div class="header-right">
+    <input
+      type="password"
+      class="api-key-input"
+      id="apiKeyInput"
+      placeholder="Anthropic API Key"
+      autocomplete="off"
+    />
+    <button class="settings-btn" id="settingsBtn" title="커스텀 롤 관리">⚙</button>
+  </div>
+</header>
+
+<!-- INPUT AREA -->
+<div class="input-area">
+  <textarea
+    id="mainInput"
+    placeholder="여기에 텍스트를 입력하세요&#10;&#10;커서를 두고 아래 버튼을 누르면 AI가 도와드려요"
+    spellcheck="false"
+  ></textarea>
+</div>
+
+<!-- RESULT PANEL -->
+<div class="result-panel" id="resultPanel">
+  <div id="resultContent"></div>
+</div>
+
+<!-- AI BUTTONS -->
+<div class="ai-buttons-wrap">
+  <button class="ai-btn" id="btnSpell">
+    <svg viewBox="0 0 16 16">
+      <path d="M2 12.5L6 3.5l4 9"/><path d="M3.5 10h5"/>
+      <path d="M12 4.5v7"/><path d="M10.5 10L12 11.5l1.5-1.5"/>
+    </svg>
+    맞춤법
+  </button>
+  <button class="ai-btn" id="btnContext">
+    <svg viewBox="0 0 16 16">
+      <path d="M2 4h12M2 8h8M2 12h10"/>
+      <path d="M12 10.5l2 1.5-2 1.5"/>
+    </svg>
+    문맥수정
+  </button>
+  <button class="ai-btn" id="btnReply">
+    <svg viewBox="0 0 16 16">
+      <rect x="1.5" y="3" width="13" height="8" rx="1.5"/>
+      <path d="M5 9.5h6M6 12l-2 1M10 12l2 1"/>
+    </svg>
+    답변생성
+  </button>
+</div>
+
+<!-- KEYBOARD MOCKUP -->
+<div class="keyboard">
+  <div class="kb-row">
+    <div class="key">q</div><div class="key">w</div><div class="key">e</div>
+    <div class="key">r</div><div class="key">t</div><div class="key">y</div>
+    <div class="key">u</div><div class="key">i</div><div class="key">o</div>
+    <div class="key">p</div>
+  </div>
+  <div class="kb-row">
+    <div class="key">a</div><div class="key">s</div><div class="key">d</div>
+    <div class="key">f</div><div class="key">g</div><div class="key">h</div>
+    <div class="key">j</div><div class="key">k</div><div class="key">l</div>
+  </div>
+  <div class="kb-row">
+    <div class="key key-dark key-wide">⇧</div>
+    <div class="key">z</div><div class="key">x</div><div class="key">c</div>
+    <div class="key">v</div><div class="key">b</div><div class="key">n</div>
+    <div class="key">m</div>
+    <div class="key key-dark key-wide">⌫</div>
+  </div>
+  <div class="kb-row">
+    <div class="key key-dark key-wide" style="min-width:56px;font-size:10px">ABC</div>
+    <div class="key key-space">space</div>
+    <div class="key key-dark key-wide" style="min-width:56px">return</div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">커스텀 롤 관리</div>
+      <button class="modal-close" id="closeSettings">✕</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">이름</label>
+      <input type="text" class="form-input" id="roleName"
+        placeholder="예: 교수님, 직장 상사, 선배님">
+    </div>
+    <div class="form-group">
+      <label class="form-label">말투 가이드</label>
+      <textarea class="form-textarea" id="roleGuide"
+        placeholder="예: 격식체, ~습니다 체, 존댓말 필수. 업무적이고 간결하게."></textarea>
+    </div>
+    <button class="btn-save" id="saveRoleBtn">저장</button>
+
+    <div class="divider"></div>
+    <div class="roles-list-title">저장된 롤</div>
+    <div id="rolesItems"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── UTILS ──
+const $ = id => document.getElementById(id);
+
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg, type = '') {
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = 'toast', 2600);
+}
+
+function cleanJSON(s) {
+  return s.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+}
+
+// ── STORAGE ──
+const store = {
+  getKey:     () => $('apiKeyInput').value.trim() || localStorage.getItem('km_key') || '',
+  getRoles:   () => JSON.parse(localStorage.getItem('km_roles') || '[]'),
+  setRoles:   v  => localStorage.setItem('km_roles', JSON.stringify(v)),
+  getHistory: () => JSON.parse(localStorage.getItem('km_hist') || '[]'),
+  addHistory: (tone, text) => {
+    const h = store.getHistory();
+    h.push({ tone, text, ts: Date.now() });
+    if (h.length > 20) h.shift();
+    localStorage.setItem('km_hist', JSON.stringify(h));
+  }
+};
+
+// ── CURSOR / TEXT ──
+function getCurrentParagraph() {
+  const ta = $('mainInput');
+  const pos = ta.selectionStart;
+  const before = ta.value.substring(0, pos);
+  const lines = before.split('\n');
+  return lines[lines.length - 1].trim();
+}
+
+function insertText(text) {
+  const ta = $('mainInput');
+  const pos = ta.selectionStart;
+  const before = ta.value.substring(0, pos);
+  const after = ta.value.substring(pos);
+  const lines = before.split('\n');
+  lines[lines.length - 1] = text;
+  const newBefore = lines.join('\n');
+  ta.value = newBefore + after;
+  ta.focus();
+  ta.setSelectionRange(newBefore.length, newBefore.length);
+  toast('입력창에 삽입되었습니다', 'ok');
+}
+
+// ── API ──
+async function callClaude(prompt) {
+  const key = store.getKey();
+  if (!key) { toast('API 키를 먼저 입력해주세요', 'err'); return null; }
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.error?.message || `오류 ${res.status}`);
+  }
+  const d = await res.json();
+  return d.content[0].text;
+}
+
+// ── PROMPTS ──
+function spellPrompt(text) {
+  return `당신은 한국어 맞춤법 및 문맥 교정 전문가입니다.
+아래 텍스트의 맞춤법·띄어쓰기를 교정하고, 문맥상 어색한 부분이 있으면 더 자연스러운 표현을 제안해주세요.
+
+반드시 아래 JSON 형식으로만 출력하세요. 마크다운이나 다른 텍스트는 절대 포함하지 마세요.
+
+{
+  "spelling": {
+    "corrected": "교정된 전체 문장",
+    "changes": [
+      { "original": "원래 표현", "fixed": "교정된 표현", "reason": "이유" }
+    ]
+  },
+  "context": {
+    "has_suggestion": true,
+    "suggestion": "더 자연스러운 표현",
+    "reason": "제안 이유"
+  }
+}
+
+맞춤법 오류 없으면 changes 빈 배열, corrected에 원문 그대로.
+문맥 제안 불필요하면 has_suggestion: false, suggestion/reason 빈 문자열.
+
+텍스트: ${text}`;
+}
+
+function replyPrompt(text) {
+  const roles = store.getRoles();
+  const hist  = store.getHistory().slice(-10);
+
+  let roleLines = '- 친근: 친구에게 말하듯 자연스럽고 가벼운 말투 (ㅋㅋ, ~야, ~어/아 사용 가능)\n- 공손: 격식체, 존댓말 (~습니다, ~요)';
+  roles.forEach(r => { roleLines += `\n- ${r.name}: ${r.guide}`; });
+
+  let histSummary = '없음';
+  if (hist.length) {
+    const cnt = {};
+    hist.forEach(h => cnt[h.tone] = (cnt[h.tone] || 0) + 1);
+    histSummary = Object.entries(cnt).sort((a,b)=>b[1]-a[1])
+      .map(([t,n]) => `${t} ${n}회`).join(', ');
+  }
+
+  const tones = ['친근','공손',...roles.map(r=>r.name)];
+  const repliesTemplate = tones.map(t => `{"tone":"${t}","text":"답변 텍스트"}`).join(',\n    ');
+
+  return `당신은 한국어 커뮤니케이션 전문가입니다.
+아래 메시지에 대한 답변을 말투별로 생성해주세요.
+
+[말투 목록]
+${roleLines}
+
+[사용자 과거 선택 패턴]
+${histSummary}
+
+상대 메시지의 맥락(격식/비격식, 관계, 톤)을 분석해 각 말투별 답변을 생성하고,
+가장 적절한 순서를 suggested_order로 알려주세요. 과거 선택 패턴도 참고하세요.
+
+반드시 아래 JSON 형식으로만 출력하세요. 마크다운이나 다른 텍스트는 절대 포함하지 마세요.
+
+{
+  "suggested_order": ${JSON.stringify(tones)},
+  "replies": [
+    ${repliesTemplate}
+  ]
+}
+
+받은 메시지: ${text}`;
+}
+
+// ── RENDER ──
+function showLoading() {
+  $('resultPanel').classList.add('visible');
+  $('resultContent').innerHTML = `
+    <div class="loading-wrap">
+      <div class="spinner"></div>
+      <span>AI가 분석 중입니다...</span>
+    </div>`;
+}
+
+function renderSpell(data, primary) {
+  const content = $('resultContent');
+
+  const diffs = (data.spelling.changes || []).map(c =>
+    `<span class="diff-item"><s>${esc(c.original)}</s><span class="diff-arrow">→</span><strong>${esc(c.fixed)}</strong></span>`
+  ).join('');
+
+  const spellCard = `
+    <div class="result-card ${primary==='spell'?'primary':'dimmed'}">
+      <span class="card-tag tag-spell">맞춤법</span>
+      <div class="card-actions">
+        <button class="btn-apply" onclick="applyText('spell')">적용</button>
+        <button class="btn-dismiss" onclick="closePanel()">✕</button>
+      </div>
+      ${diffs ? `<div class="diff-row">${diffs}</div>` : ''}
+      <div class="card-body">${esc(data.spelling.corrected)}</div>
+    </div>`;
+
+  let ctxCard = '';
+  if (data.context.has_suggestion) {
+    ctxCard = `
+      <div class="result-card ${primary==='context'?'primary':'dimmed'}">
+        <span class="card-tag tag-ctx">문맥수정</span>
+        <div class="card-actions">
+          <button class="btn-apply" onclick="applyText('context')">적용</button>
+          <button class="btn-dismiss" onclick="closePanel()">✕</button>
+        </div>
+        <div class="card-body">${esc(data.context.suggestion)}</div>
+        ${data.context.reason ? `<div class="card-reason">${esc(data.context.reason)}</div>` : ''}
+      </div>`;
+  }
+
+  content.innerHTML = `<div class="section-title">교정 결과</div>` +
+    (primary === 'spell' ? spellCard + ctxCard : ctxCard + spellCard);
+
+  window._spellData = data;
+}
+
+function renderReply(data) {
+  const roles = store.getRoles();
+  const dotMap = {
+    '친근': '#4CAF50',
+    '공손': '#5C6BC0',
+  };
+  const extra = ['#FF7043','#FF8F00','#8E24AA','#00897B'];
+  roles.forEach((r,i) => { dotMap[r.name] = extra[i % extra.length]; });
+
+  const order = data.suggested_order || [];
+  const sorted = [...data.replies].sort((a,b) => {
+    const ia = order.indexOf(a.tone), ib = order.indexOf(b.tone);
+    if (ia < 0 && ib < 0) return 0;
+    if (ia < 0) return 1; if (ib < 0) return -1;
+    return ia - ib;
+  });
+
+  window._replyData = sorted;
+
+  const chipsHtml = sorted.map((r,i) =>
+    `<button class="chip ${i===0?'active':''}" onclick="switchChip('${esc(r.tone)}',this)">${esc(r.tone)}</button>`
+  ).join('') + `<button class="chip chip-add" onclick="openSettings()">+ 추가</button>`;
+
+  const cardsHtml = sorted.map((r,i) => `
+    <div class="reply-card ${i===0?'selected':''}"
+         data-tone="${esc(r.tone)}"
+         data-text="${esc(r.text)}"
+         style="${i!==0?'display:none':''}"
+         onclick="pickReply(this)">
+      <div class="reply-dot" style="background:${dotMap[r.tone]||'#999'}"></div>
+      <div>
+        <div class="reply-tone">${esc(r.tone)}${i===0?' · AI 추천':''}</div>
+        <div class="reply-text">${esc(r.text)}</div>
+      </div>
+    </div>`).join('');
+
+  $('resultContent').innerHTML = `
+    <div class="section-title">답변 초안 — 카드를 선택하면 입력창에 삽입됩니다</div>
+    <div class="chips-row">${chipsHtml}</div>
+    <div id="replyCards">${cardsHtml}</div>`;
+}
+
+// ── ACTIONS ──
+function applyText(type) {
+  const d = window._spellData;
+  if (!d) return;
+  const text = type === 'spell' ? d.spelling.corrected : d.context.suggestion;
+  if (text) { insertText(text); closePanel(); }
+}
+
+function closePanel() {
+  $('resultPanel').classList.remove('visible');
+  document.querySelectorAll('.ai-btn').forEach(b => b.classList.remove('active'));
+  window._spellData = null;
+}
+
+function switchChip(tone, el) {
+  document.querySelectorAll('.chips-row .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#replyCards .reply-card').forEach(c => {
+    const match = c.dataset.tone === tone;
+    c.style.display = match ? 'flex' : 'none';
+    c.classList.toggle('selected', match);
+  });
+}
+
+function pickReply(el) {
+  store.addHistory(el.dataset.tone, el.dataset.text);
+  insertText(el.dataset.text);
+  closePanel();
+}
+
+// ── MAIN HANDLERS ──
+async function handleSpell(primary) {
+  const text = getCurrentParagraph();
+  if (!text) { toast('텍스트를 먼저 입력해주세요', 'err'); return; }
+
+  document.querySelectorAll('.ai-btn').forEach(b => b.classList.remove('active'));
+  $('btnSpell').classList.add('active');
+  $('btnContext').classList.add('active');
+
+  showLoading();
+  try {
+    const raw = await callClaude(spellPrompt(text));
+    if (!raw) return;
+    const data = JSON.parse(cleanJSON(raw));
+    renderSpell(data, primary);
+  } catch(e) {
+    $('resultContent').innerHTML = `<div class="loading-wrap" style="color:#c62828">⚠ ${esc(e.message)}</div>`;
+    toast(e.message, 'err');
+  }
+}
+
+async function handleReply() {
+  const text = getCurrentParagraph();
+  if (!text) { toast('텍스트를 먼저 입력해주세요', 'err'); return; }
+
+  document.querySelectorAll('.ai-btn').forEach(b => b.classList.remove('active'));
+  $('btnReply').classList.add('active');
+
+  showLoading();
+  try {
+    const raw = await callClaude(replyPrompt(text));
+    if (!raw) return;
+    const data = JSON.parse(cleanJSON(raw));
+    renderReply(data);
+  } catch(e) {
+    $('resultContent').innerHTML = `<div class="loading-wrap" style="color:#c62828">⚠ ${esc(e.message)}</div>`;
+    toast(e.message, 'err');
+  }
+}
+
+// ── SETTINGS ──
+function openSettings() {
+  $('settingsModal').classList.add('visible');
+  renderRoles();
+}
+function closeSettings() {
+  $('settingsModal').classList.remove('visible');
+  $('roleName').value = '';
+  $('roleGuide').value = '';
+}
+function renderRoles() {
+  const roles = store.getRoles();
+  $('rolesItems').innerHTML = roles.length
+    ? roles.map(r => `
+        <div class="role-item">
+          <div class="role-info">
+            <div class="role-name">${esc(r.name)}</div>
+            <div class="role-guide">${esc(r.guide)}</div>
+          </div>
+          <button class="btn-del" onclick="deleteRole(${r.id})">삭제</button>
+        </div>`).join('')
+    : '<div style="font-size:12px;color:#ccc;padding:8px 0">아직 저장된 롤이 없습니다</div>';
+}
+function deleteRole(id) {
+  store.setRoles(store.getRoles().filter(r => r.id !== id));
+  renderRoles();
+  toast('삭제되었습니다');
+}
+
+// ── EVENT LISTENERS ──
+$('btnSpell').addEventListener('click', () => handleSpell('spell'));
+$('btnContext').addEventListener('click', () => handleSpell('context'));
+$('btnReply').addEventListener('click', handleReply);
+
+$('settingsBtn').addEventListener('click', openSettings);
+$('closeSettings').addEventListener('click', closeSettings);
+$('settingsModal').addEventListener('click', e => {
+  if (e.target === $('settingsModal')) closeSettings();
+});
+
+$('saveRoleBtn').addEventListener('click', () => {
+  const name  = $('roleName').value.trim();
+  const guide = $('roleGuide').value.trim();
+  if (!name)  { toast('이름을 입력해주세요', 'err'); return; }
+  if (!guide) { toast('말투 가이드를 입력해주세요', 'err'); return; }
+
+  const roles = store.getRoles();
+  roles.push({ id: Date.now(), name, guide });
+  store.setRoles(roles);
+  $('roleName').value = '';
+  $('roleGuide').value = '';
+  renderRoles();
+  toast(`"${name}" 롤이 저장되었습니다`, 'ok');
+});
+
+$('apiKeyInput').addEventListener('change', e => {
+  localStorage.setItem('km_key', e.target.value.trim());
+});
+
+// ── INIT ──
+(function init() {
+  const saved = localStorage.getItem('km_key');
+  if (saved) $('apiKeyInput').value = saved;
+})();
+</script>
+</body>
+</html>
