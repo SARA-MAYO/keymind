@@ -167,7 +167,8 @@ body {
   transition: opacity 0.15s, border-color 0.15s;
 }
 .result-card.primary { border: 1.5px solid #1a1a1a; }
-.result-card.dimmed { opacity: 0.42; }
+.result-card.dimmed { opacity: 0.5; cursor: pointer; }
+.result-card.dimmed:hover { opacity: 0.8; border-color: #bbb; }
 .card-tag {
   display: inline-block;
   font-size: 10px;
@@ -803,11 +804,11 @@ function renderSpell(data, primary) {
   ).join('');
 
   const spellCard = `
-    <div class="result-card ${primary==='spell'?'primary':'dimmed'}">
+    <div class="result-card ${primary==='spell'?'primary':'dimmed'}" ${primary!=='spell'?'onclick="swapSpell(\'spell\')"':''}>
       <span class="card-tag tag-spell">맞춤법</span>
       <div class="card-actions">
-        <button class="btn-apply" onclick="applyText('spell')">적용</button>
-        <button class="btn-dismiss" onclick="closePanel()">✕</button>
+        <button class="btn-apply" onclick="applyText('spell');event.stopPropagation()">적용</button>
+        <button class="btn-dismiss" onclick="closePanel();event.stopPropagation()">✕</button>
       </div>
       ${diffs ? `<div class="diff-row">${diffs}</div>` : ''}
       <div class="card-body">${esc(data.spelling.corrected)}</div>
@@ -816,11 +817,11 @@ function renderSpell(data, primary) {
   let ctxCard = '';
   if (data.context.has_suggestion) {
     ctxCard = `
-      <div class="result-card ${primary==='context'?'primary':'dimmed'}">
+      <div class="result-card ${primary==='context'?'primary':'dimmed'}" ${primary!=='context'?'onclick="swapSpell(\'context\')"':''}>
         <span class="card-tag tag-ctx">문맥수정</span>
         <div class="card-actions">
-          <button class="btn-apply" onclick="applyText('context')">적용</button>
-          <button class="btn-dismiss" onclick="closePanel()">✕</button>
+          <button class="btn-apply" onclick="applyText('context');event.stopPropagation()">적용</button>
+          <button class="btn-dismiss" onclick="closePanel();event.stopPropagation()">✕</button>
         </div>
         <div class="card-body">${esc(data.context.suggestion)}</div>
         ${data.context.reason ? `<div class="card-reason">${esc(data.context.reason)}</div>` : ''}
@@ -876,6 +877,12 @@ function renderReply(data) {
 }
 
 // ── ACTIONS ──
+function swapSpell(newPrimary) {
+  const d = window._spellData;
+  if (!d) return;
+  renderSpell(d, newPrimary);
+}
+
 function applyText(type) {
   const d = window._spellData;
   if (!d) return;
