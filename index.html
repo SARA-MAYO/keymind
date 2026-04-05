@@ -675,6 +675,14 @@ function getCurrentParagraph() {
   return lines[lines.length - 1].trim();
 }
 
+function getSelectedText() {
+  const ta = $('mainInput');
+  const start = ta.selectionStart;
+  const end = ta.selectionEnd;
+  if (start === end) return '';
+  return ta.value.substring(start, end).trim();
+}
+
 function insertText(text) {
   const ta = $('mainInput');
   const pos = ta.selectionStart;
@@ -934,8 +942,8 @@ async function handleSpell(primary) {
 }
 
 async function handleReply() {
-  const text = getCurrentParagraph();
-  if (!text) { toast('텍스트를 먼저 입력해주세요', 'err'); return; }
+  const text = getSelectedText();
+  if (!text) { toast('답변할 메시지를 드래그로 선택해주세요', 'err'); return; }
 
   document.querySelectorAll('.ai-btn').forEach(b => b.classList.remove('active'));
   $('btnReply').classList.add('active');
