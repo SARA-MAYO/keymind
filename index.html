@@ -569,23 +569,7 @@ body {
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast.err  { background: #c62828; }
-.result-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-.panel-close {
-  background: none;
-  border: none;
-  font-size: 15px;
-  color: #bbb;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-}
-.panel-close:hover { color: #555; }
-
+.toast.ok   { background: #2e7d32; }
 </style>
 </head>
 <body>
@@ -789,6 +773,8 @@ function renderChat() {
 function clickReceived(id) {
   activeReceivedId = id;
   renderChat();
+  const msg = messages.find(m => m.id === id);
+  if (msg) handleReply(msg.text);
 }
 
 function startEdit(e, id) {
@@ -933,11 +919,13 @@ ${histSummary}
 function showLoading() {
   $('resultPanel').classList.add('visible');
   $('resultContent').innerHTML = `
-  <div class="result-panel-header">
-    <div class="section-title" style="margin-bottom:0">교정 결과</div>
-    <button class="panel-close" onclick="closePanel()">✕</button>
-  </div>`
-    ;
+    <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
+      <button onclick="closePanel()" style="background:none;border:none;font-size:15px;color:#bbb;cursor:pointer;padding:0;line-height:1">✕</button>
+    </div>
+    <div class="loading-wrap">
+      <div class="spinner"></div>
+      <span>AI가 분석 중입니다...</span>
+    </div>`;
 }
 
 function renderSpell(data, primary) {
@@ -972,7 +960,11 @@ function renderSpell(data, primary) {
       </div>`;
   }
 
-  $('resultContent').innerHTML = `<div class="section-title">교정 결과</div>` +
+  $('resultContent').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="section-title" style="margin-bottom:0">교정 결과</div>
+      <button onclick="closePanel()" style="background:none;border:none;font-size:15px;color:#bbb;cursor:pointer;padding:0;line-height:1">✕</button>
+    </div>` +
     (primary==='spell' ? spellCard+ctxCard : ctxCard+spellCard);
   window._spellData = data;
 }
@@ -1008,10 +1000,12 @@ function renderReply(data) {
     </div>`).join('');
 
   $('resultContent').innerHTML = `
-  <div class="result-panel-header">
-    <div class="section-title" style="margin-bottom:0">답변 초안 — 선택하면 입력창에 삽입됩니다</div>
-    <button class="panel-close" onclick="closePanel()">✕</button>
-  </div>`;
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="section-title" style="margin-bottom:0">답변 초안 — 선택하면 입력창에 삽입됩니다</div>
+      <button onclick="closePanel()" style="background:none;border:none;font-size:15px;color:#bbb;cursor:pointer;padding:0;line-height:1">✕</button>
+    </div>
+    <div class="chips-row">${chipsHtml}</div>
+    <div id="replyCards">${cardsHtml}</div>`;
 }
 
 // ── ACTIONS ──
@@ -1141,16 +1135,10 @@ function editRole(id) {
 // ── EVENTS ──
 $('btnSpell').addEventListener('click', ()=>handleSpell('spell'));
 $('btnContext').addEventListener('click', ()=>handleSpell('context'));
-$('btnReply').addEventListener('click', () => {
-  const selected = window.getSelection().toString().trim();
-  if (selected) {
-    handleReply(selected);
-  } else if (activeReceivedId) {
-    const msg = messages.find(m => m.id === activeReceivedId);
-    if (msg) handleReply(msg.text);
-  } else {
-    toast('상대 메시지를 드래그로 선택해주세요', 'err');
-  }
+$('btnReply').addEventListener('click', ()=>{
+  if (!activeReceivedId) { toast('상대 말풍선을 먼저 클릭해주세요', 'err'); return; }
+  const msg = messages.find(m=>m.id===activeReceivedId);
+  if (msg) handleReply(msg.text);
 });
 
 $('sendBtn').addEventListener('click', sendMessage);
