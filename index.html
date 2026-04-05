@@ -1103,7 +1103,8 @@ function renderRoles() {
             <div class="role-name">${esc(r.name)}</div>
             <div class="role-guide">${esc(r.guide)}</div>
           </div>
-          <button class="btn-del" onclick="deleteRole(${r.id})">삭제</button>
+          <button class="btn-del" style="background:#f0f0f0;color:#555;border-color:#ddd;margin-right:5px" onclick="editRole(${r.id})">편집</button>
+<button class="btn-del" onclick="deleteRole(${r.id})">삭제</button>
         </div>`).join('')
     : '<div style="font-size:12px;color:#ccc;padding:8px 0">아직 저장된 롤이 없습니다</div>';
 }
@@ -1111,6 +1112,14 @@ function deleteRole(id) {
   store.setRoles(store.getRoles().filter(r=>r.id!==id));
   renderRoles();
   toast('삭제되었습니다');
+}
+function editRole(id) {
+  const role = store.getRoles().find(r => r.id === id);
+  if (!role) return;
+  $('roleName').value = role.name;
+  $('roleGuide').value = role.guide;
+  $('saveRoleBtn').dataset.editId = id;
+  $('saveRoleBtn').textContent = '수정 완료';
 }
 
 // ── EVENTS ──
@@ -1132,17 +1141,38 @@ $('closeSettings').addEventListener('click', closeSettings);
 $('settingsModal').addEventListener('click', e=>{
   if (e.target===$('settingsModal')) closeSettings();
 });
-$('saveRoleBtn').addEventListener('click', ()=>{
+$('saveRoleBtn').addEventListener('click', () => {
   const name  = $('roleName').value.trim();
   const guide = $('roleGuide').value.trim();
   if (!name)  { toast('이름을 입력해주세요','err'); return; }
   if (!guide) { toast('말투 가이드를 입력해주세요','err'); return; }
+
+  const editId = $('saveRoleBtn').dataset.editId;
   const roles = store.getRoles();
-  roles.push({ id: Date.now(), name, guide });
+
+  if (editId) {
+    // 수정 모드
+    const idx = roles.findIndex(r => r.id === Number(editId));
+    if (idx !== -1) { roles[idx].name = name; roles[idx].guide = guide; }
+    delete $('saveRoleBtn').dataset.editId;
+    $('saveRoleBtn').textContent = '저장';
+    toast(`"${name}" 롤이 수정되었습니다`, 'ok');
+  } else {
+    // 추가 모드
+    roles.push({ id: Date.now(), name, guide });
+    toast(`"${name}" 롤이 저장되었습니다`, 'ok');
+  }
+
   store.setRoles(roles);
-  $('roleName').value=''; $('roleGuide').value='';
+  $('roleName').value = '';
+  $('roleGuide').value = '';
   renderRoles();
-  toast(`"${name}" 롤이 저장되었습니다`,'ok');
+
+  // ② 실시간 칩 업데이트 — 답변 결과 패널 열려있으면 바로 반영
+  if ($('replyCards')) {
+    const activeMsg = messages.find(m => m.id === activeReceivedId);
+    if (activeMsg) handleReply(activeMsg.text);
+  }
 });
 $('apiKeyInput').addEventListener('change', e=>{
   localStorage.setItem('km_key', e.target.value.trim());
