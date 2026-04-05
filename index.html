@@ -47,7 +47,6 @@ body {
   letter-spacing: 0.5px;
 }
 .header-right { display: flex; align-items: center; gap: 8px; }
-.api-key-wrap { position: relative; }
 .api-key-input {
   background: rgba(255,255,255,0.08);
   border: 0.5px solid rgba(255,255,255,0.2);
@@ -55,12 +54,10 @@ body {
   color: white;
   font-size: 11.5px;
   padding: 6px 10px;
-  width: 210px;
+  width: 200px;
   outline: none;
   font-family: inherit;
-  transition: border-color 0.15s;
 }
-.api-key-input:focus { border-color: rgba(255,255,255,0.5); }
 .api-key-input::placeholder { color: rgba(255,255,255,0.3); }
 .settings-btn {
   background: rgba(255,255,255,0.08);
@@ -71,36 +68,122 @@ body {
   padding: 5px 8px;
   font-size: 15px;
   line-height: 1;
-  transition: all 0.15s;
 }
-.settings-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+.settings-btn:hover { color: white; }
 
-/* ── INPUT AREA ── */
-.input-area {
+/* ── CHAT AREA ── */
+.chat-area {
   flex: 1;
-  padding: 14px;
-  background: #f0f0f2;
   overflow-y: auto;
+  padding: 14px 14px 8px;
+  background: #f0f0f2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   min-height: 0;
 }
-#mainInput {
-  width: 100%;
-  height: 100%;
-  min-height: 80px;
+.chat-area::-webkit-scrollbar { width: 3px; }
+.chat-area::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+
+/* 말풍선 공통 */
+.msg-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+.msg-row.received { justify-content: flex-start; }
+.msg-row.sent     { justify-content: flex-end; }
+
+.bubble {
+  max-width: 72%;
+  padding: 9px 13px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  position: relative;
+  word-break: break-word;
+}
+.bubble.received {
   background: white;
-  border: 0.5px solid #e2e2e2;
-  border-radius: 12px;
-  padding: 14px 16px;
-  font-size: 15px;
+  border-radius: 4px 18px 18px 18px;
+  color: #1a1a1a;
+  border: 0.5px solid #e8e8e8;
+}
+.bubble.sent {
+  background: #1a1a1a;
+  border-radius: 18px 18px 4px 18px;
+  color: white;
+}
+
+/* 수신 말풍선 — 클릭 가능 */
+.bubble.received.clickable {
+  cursor: pointer;
+  padding-right: 50px;
+}
+.bubble.received.clickable:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
+}
+.bubble.received.active {
+  border: 1.5px solid #1a1a1a;
+  background: #fafafa;
+}
+
+/* 수신 말풍선 액션 버튼들 */
+.bubble-actions {
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  display: flex;
+  gap: 3px;
+}
+.bub-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: #bbb;
+  line-height: 1;
+}
+.bub-btn:hover { color: #555; background: rgba(0,0,0,0.06); }
+
+/* 편집 모드 */
+.bubble-edit {
+  width: 100%;
+  min-width: 180px;
+  border: none;
+  outline: none;
+  background: transparent;
   font-family: inherit;
-  line-height: 1.65;
+  font-size: 14px;
+  line-height: 1.5;
   color: #1a1a1a;
   resize: none;
-  outline: none;
-  transition: border-color 0.15s;
+  padding: 0;
+  padding-right: 40px;
 }
-#mainInput:focus { border-color: #c0c0c0; }
-#mainInput::placeholder { color: #bbb; }
+
+/* 메시지 추가 버튼 */
+.add-msg-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 20px;
+  border: 1.5px dashed #ccc;
+  background: transparent;
+  color: #aaa;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  align-self: flex-start;
+  transition: all 0.15s;
+  margin-top: 2px;
+}
+.add-msg-btn:hover { border-color: #999; color: #555; }
 
 /* ── RESULT PANEL ── */
 .result-panel {
@@ -108,7 +191,7 @@ body {
   border-top: 0.5px solid #ebebeb;
   padding: 11px 12px 8px;
   display: none;
-  max-height: 230px;
+  max-height: 210px;
   overflow-y: auto;
   flex-shrink: 0;
 }
@@ -121,7 +204,6 @@ body {
   color: #aaa;
   font-weight: 500;
   margin-bottom: 8px;
-  letter-spacing: 0.2px;
 }
 
 /* Chips */
@@ -131,7 +213,6 @@ body {
   flex-wrap: nowrap;
   overflow-x: auto;
   margin-bottom: 10px;
-  padding-bottom: 1px;
 }
 .chips-row::-webkit-scrollbar { display: none; }
 .chip {
@@ -144,16 +225,13 @@ body {
   white-space: nowrap;
   background: white;
   color: #444;
+  font-family: inherit;
   transition: all 0.12s;
   flex-shrink: 0;
-  font-family: inherit;
 }
 .chip:hover { border-color: #999; color: #1a1a1a; }
 .chip.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
-.chip-add {
-  border-style: dashed;
-  color: #999;
-}
+.chip-add { border-style: dashed; color: #999; }
 .chip-add:hover { color: #555; border-color: #999; }
 
 /* Result cards */
@@ -169,6 +247,7 @@ body {
 .result-card.primary { border: 1.5px solid #1a1a1a; }
 .result-card.dimmed { opacity: 0.5; cursor: pointer; }
 .result-card.dimmed:hover { opacity: 0.8; border-color: #bbb; }
+
 .card-tag {
   display: inline-block;
   font-size: 10px;
@@ -176,7 +255,6 @@ body {
   padding: 2px 8px;
   border-radius: 20px;
   margin-bottom: 7px;
-  letter-spacing: 0.1px;
 }
 .tag-spell { background: #E8F5E9; color: #2E7D32; }
 .tag-ctx   { background: #FFF8E1; color: #E65100; }
@@ -198,14 +276,12 @@ body {
   padding: 0;
   font-family: inherit;
 }
-.btn-apply:hover { opacity: 0.75; }
 .btn-dismiss {
   font-size: 14px;
   color: #ccc;
   cursor: pointer;
   background: none;
   border: none;
-  line-height: 1;
   padding: 0;
 }
 .btn-dismiss:hover { color: #888; }
@@ -215,11 +291,7 @@ body {
   color: #1a1a1a;
   padding-right: 75px;
 }
-.card-reason {
-  font-size: 10.5px;
-  color: #aaa;
-  margin-top: 5px;
-}
+.card-reason { font-size: 10.5px; color: #aaa; margin-top: 5px; }
 .diff-row {
   font-size: 11.5px;
   color: #999;
@@ -242,7 +314,7 @@ body {
   align-items: flex-start;
   gap: 10px;
   background: white;
-  transition: background 0.1s, border-color 0.1s;
+  transition: background 0.1s;
 }
 .reply-card:hover { background: #fafafa; }
 .reply-card.selected { border: 1.5px solid #1a1a1a; }
@@ -277,6 +349,49 @@ body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── COMPOSE AREA ── */
+.compose-area {
+  background: white;
+  border-top: 0.5px solid #e5e5e5;
+  padding: 8px 10px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+#mainInput {
+  flex: 1;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 9px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  color: #1a1a1a;
+  resize: none;
+  outline: none;
+  max-height: 100px;
+  overflow-y: auto;
+  background: #f7f7f7;
+}
+#mainInput:focus { border-color: #ccc; background: white; }
+#mainInput::placeholder { color: #bbb; }
+.send-btn {
+  background: #1a1a1a;
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.send-btn:hover { background: #333; }
+.send-btn svg { width: 15px; height: 15px; fill: white; }
+
 /* ── AI BUTTONS ── */
 .ai-buttons-wrap {
   background: #E9E9EB;
@@ -304,11 +419,9 @@ body {
   white-space: nowrap;
   min-width: 0;
   transition: all 0.15s;
-  -webkit-tap-highlight-color: transparent;
 }
-.ai-btn:hover { border-color: #888; background: rgba(0,0,0,0.03); }
+.ai-btn:hover { border-color: #888; }
 .ai-btn.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
-.ai-btn.active:hover { background: #333; }
 .ai-btn svg { width: 13px; height: 13px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
 /* ── KEYBOARD ── */
@@ -345,13 +458,8 @@ body {
   font-size: 11px;
   box-shadow: 0 1px 0 #6b7280;
 }
-.key-space {
-  flex: 1;
-  max-width: 190px;
-  font-size: 12px;
-  color: #555;
-}
-.key-wide { min-width: 44px; }
+.key-space { flex: 1; max-width: 190px; font-size: 12px; color: #555; }
+.key-wide  { min-width: 44px; }
 
 /* ── MODAL ── */
 .modal-overlay {
@@ -366,10 +474,7 @@ body {
   pointer-events: none;
   transition: opacity 0.2s;
 }
-.modal-overlay.visible {
-  opacity: 1;
-  pointer-events: all;
-}
+.modal-overlay.visible { opacity: 1; pointer-events: all; }
 .modal {
   background: white;
   border-radius: 18px 18px 0 0;
@@ -382,37 +487,18 @@ body {
   transition: transform 0.22s cubic-bezier(0.34,1.2,0.64,1);
 }
 .modal-overlay.visible .modal { transform: translateY(0); }
-.modal-handle {
-  width: 36px;
-  height: 4px;
-  background: #e0e0e0;
-  border-radius: 2px;
-  margin: 0 auto 18px;
-}
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
-}
-.modal-title { font-size: 17px; font-weight: 700; }
-.modal-close {
-  background: #f0f0f0;
-  border: none;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  font-size: 14px;
-  color: #666;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.modal-handle { width: 36px; height: 4px; background: #e0e0e0; border-radius: 2px; margin: 0 auto 18px; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.modal-title  { font-size: 17px; font-weight: 700; }
+.modal-close  {
+  background: #f0f0f0; border: none; border-radius: 50%;
+  width: 28px; height: 28px; font-size: 14px; color: #666;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
 .modal-close:hover { background: #e0e0e0; color: #1a1a1a; }
 
-.form-group { margin-bottom: 13px; }
-.form-label { font-size: 12px; color: #888; margin-bottom: 5px; display: block; font-weight: 500; }
+.form-group  { margin-bottom: 13px; }
+.form-label  { font-size: 12px; color: #888; margin-bottom: 5px; display: block; font-weight: 500; }
 .form-input, .form-textarea {
   width: 100%;
   border: 0.5px solid #e0e0e0;
@@ -423,15 +509,10 @@ body {
   color: #1a1a1a;
   outline: none;
   background: #fafafa;
-  transition: border-color 0.15s, background 0.15s;
 }
-.form-input:focus, .form-textarea:focus {
-  border-color: #aaa;
-  background: white;
-}
+.form-input:focus, .form-textarea:focus { border-color: #aaa; background: white; }
 .form-textarea { height: 72px; resize: none; }
 .form-input::placeholder, .form-textarea::placeholder { color: #c8c8c8; }
-
 .btn-save {
   width: 100%;
   background: #1a1a1a;
@@ -444,15 +525,9 @@ body {
   font-family: inherit;
   cursor: pointer;
   margin-top: 2px;
-  transition: background 0.15s;
 }
 .btn-save:hover { background: #333; }
-
-.divider {
-  height: 0.5px;
-  background: #f0f0f0;
-  margin: 18px 0 14px;
-}
+.divider { height: 0.5px; background: #f0f0f0; margin: 18px 0 14px; }
 .roles-list-title { font-size: 11px; color: #bbb; font-weight: 500; margin-bottom: 10px; }
 .role-item {
   display: flex;
@@ -464,26 +539,13 @@ body {
 }
 .role-item:last-child { border-bottom: none; }
 .role-info { flex: 1; min-width: 0; }
-.role-name { font-size: 13.5px; font-weight: 500; }
-.role-guide {
-  font-size: 11px;
-  color: #bbb;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+.role-name  { font-size: 13.5px; font-weight: 500; }
+.role-guide { font-size: 11px; color: #bbb; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .btn-del {
-  font-size: 11.5px;
-  color: #ef5350;
-  background: #fff5f5;
-  border: 0.5px solid #ffcdd2;
-  border-radius: 6px;
-  padding: 4px 9px;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-  flex-shrink: 0;
+  font-size: 11.5px; color: #ef5350;
+  background: #fff5f5; border: 0.5px solid #ffcdd2;
+  border-radius: 6px; padding: 4px 9px;
+  cursor: pointer; font-family: inherit; white-space: nowrap; flex-shrink: 0;
 }
 .btn-del:hover { background: #ffebee; }
 
@@ -506,12 +568,8 @@ body {
   font-weight: 500;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-.toast.err { background: #c62828; }
-.toast.ok  { background: #2e7d32; }
-
-/* Scrollbar global */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+.toast.err  { background: #c62828; }
+.toast.ok   { background: #2e7d32; }
 </style>
 </head>
 <body>
@@ -523,29 +581,30 @@ body {
     <span class="logo-badge">BETA</span>
   </div>
   <div class="header-right">
-    <input
-      type="password"
-      class="api-key-input"
-      id="apiKeyInput"
-      placeholder="Anthropic API Key"
-      autocomplete="off"
-    />
-    <button class="settings-btn" id="settingsBtn" title="커스텀 롤 관리">⚙</button>
+    <input type="password" class="api-key-input" id="apiKeyInput"
+      placeholder="Anthropic API Key" autocomplete="off"/>
+    <button class="settings-btn" id="settingsBtn">⚙</button>
   </div>
 </header>
 
-<!-- INPUT AREA -->
-<div class="input-area">
-  <textarea
-    id="mainInput"
-    placeholder="여기에 텍스트를 입력하세요&#10;&#10;커서를 두고 아래 버튼을 누르면 AI가 도와드려요"
-    spellcheck="false"
-  ></textarea>
+<!-- CHAT AREA -->
+<div class="chat-area" id="chatArea">
+  <!-- 메시지들이 JS로 렌더링됨 -->
 </div>
 
 <!-- RESULT PANEL -->
 <div class="result-panel" id="resultPanel">
   <div id="resultContent"></div>
+</div>
+
+<!-- COMPOSE -->
+<div class="compose-area">
+  <textarea id="mainInput" rows="1"
+    placeholder="메시지를 입력하세요..."
+    oninput="autoResize(this)"></textarea>
+  <button class="send-btn" id="sendBtn" title="전송">
+    <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+  </button>
 </div>
 
 <!-- AI BUTTONS -->
@@ -608,7 +667,6 @@ body {
       <div class="modal-title">커스텀 롤 관리</div>
       <button class="modal-close" id="closeSettings">✕</button>
     </div>
-
     <div class="form-group">
       <label class="form-label">이름</label>
       <input type="text" class="form-input" id="roleName"
@@ -620,7 +678,6 @@ body {
         placeholder="예: 격식체, ~습니다 체, 존댓말 필수. 업무적이고 간결하게."></textarea>
     </div>
     <button class="btn-save" id="saveRoleBtn">저장</button>
-
     <div class="divider"></div>
     <div class="roles-list-title">저장된 롤</div>
     <div id="rolesItems"></div>
@@ -631,33 +688,37 @@ body {
 <div class="toast" id="toast"></div>
 
 <script>
-// ── UTILS ──
 const $ = id => document.getElementById(id);
 
+// ── UTILS ──
 function esc(s) {
-  return String(s || '')
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
-function toast(msg, type = '') {
+function toast(msg, type='') {
   const el = $('toast');
   el.textContent = msg;
   el.className = 'toast show ' + type;
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.className = 'toast', 2600);
+  el._t = setTimeout(()=> el.className='toast', 2600);
 }
-
 function cleanJSON(s) {
   return s.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+}
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+function scrollChatBottom() {
+  const c = $('chatArea');
+  c.scrollTop = c.scrollHeight;
 }
 
 // ── STORAGE ──
 const store = {
-  getKey:     () => $('apiKeyInput').value.trim() || localStorage.getItem('km_key') || '',
-  getRoles:   () => JSON.parse(localStorage.getItem('km_roles') || '[]'),
-  setRoles:   v  => localStorage.setItem('km_roles', JSON.stringify(v)),
-  getHistory: () => JSON.parse(localStorage.getItem('km_hist') || '[]'),
+  getKey:     ()  => $('apiKeyInput').value.trim() || localStorage.getItem('km_key') || '',
+  getRoles:   ()  => JSON.parse(localStorage.getItem('km_roles') || '[]'),
+  setRoles:   v   => localStorage.setItem('km_roles', JSON.stringify(v)),
+  getHistory: ()  => JSON.parse(localStorage.getItem('km_hist') || '[]'),
   addHistory: (tone, text) => {
     const h = store.getHistory();
     h.push({ tone, text, ts: Date.now() });
@@ -666,35 +727,102 @@ const store = {
   }
 };
 
-// ── CURSOR / TEXT ──
-function getCurrentParagraph() {
-  const ta = $('mainInput');
-  const pos = ta.selectionStart;
-  const before = ta.value.substring(0, pos);
-  const lines = before.split('\n');
-  return lines[lines.length - 1].trim();
+// ── CHAT STATE ──
+let messages = [
+  { id: 1, type: 'received', text: '내일 점심 같이 먹을 수 있어? 시간 돼?' }
+];
+let activeReceivedId = null;
+
+function renderChat() {
+  const area = $('chatArea');
+  area.innerHTML = '';
+
+  messages.forEach(msg => {
+    const row = document.createElement('div');
+    row.className = 'msg-row ' + msg.type;
+    row.dataset.id = msg.id;
+
+    if (msg.type === 'received') {
+      row.innerHTML = `
+        <div class="bubble received clickable ${activeReceivedId===msg.id?'active':''}"
+             id="bubble-${msg.id}"
+             onclick="clickReceived(${msg.id})">
+          <span class="bubble-text">${esc(msg.text)}</span>
+          <div class="bubble-actions">
+            <button class="bub-btn" title="편집" onclick="startEdit(event,${msg.id})">✏</button>
+            <button class="bub-btn" title="삭제" onclick="deleteMsg(event,${msg.id})">✕</button>
+          </div>
+        </div>`;
+    } else {
+      row.innerHTML = `
+        <div class="bubble sent">${esc(msg.text)}</div>`;
+    }
+    area.appendChild(row);
+  });
+
+  // + 상대 메시지 추가 버튼
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-msg-btn';
+  addBtn.innerHTML = '+ 상대 메시지 추가';
+  addBtn.onclick = addReceivedMsg;
+  area.appendChild(addBtn);
+
+  scrollChatBottom();
 }
 
-function getSelectedText() {
-  const ta = $('mainInput');
-  const start = ta.selectionStart;
-  const end = ta.selectionEnd;
-  if (start === end) return '';
-  return ta.value.substring(start, end).trim();
+function clickReceived(id) {
+  activeReceivedId = id;
+  renderChat();
+  const msg = messages.find(m => m.id === id);
+  if (msg) handleReply(msg.text);
 }
 
-function insertText(text) {
-  const ta = $('mainInput');
-  const pos = ta.selectionStart;
-  const before = ta.value.substring(0, pos);
-  const after = ta.value.substring(pos);
-  const lines = before.split('\n');
-  lines[lines.length - 1] = text;
-  const newBefore = lines.join('\n');
-  ta.value = newBefore + after;
+function startEdit(e, id) {
+  e.stopPropagation();
+  const bubble = $('bubble-' + id);
+  const msg = messages.find(m => m.id === id);
+  if (!msg) return;
+
+  bubble.innerHTML = `
+    <textarea class="bubble-edit" rows="2"
+      onblur="finishEdit(${id}, this.value)"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur()}"
+    >${esc(msg.text)}</textarea>`;
+  const ta = bubble.querySelector('textarea');
   ta.focus();
-  ta.setSelectionRange(newBefore.length, newBefore.length);
-  toast('입력창에 삽입되었습니다', 'ok');
+  ta.select();
+}
+
+function finishEdit(id, newText) {
+  const msg = messages.find(m => m.id === id);
+  if (msg && newText.trim()) msg.text = newText.trim();
+  renderChat();
+}
+
+function deleteMsg(e, id) {
+  e.stopPropagation();
+  messages = messages.filter(m => m.id !== id);
+  if (activeReceivedId === id) activeReceivedId = null;
+  renderChat();
+}
+
+function addReceivedMsg() {
+  const id = Date.now();
+  messages.push({ id, type: 'received', text: '새 메시지를 입력하세요' });
+  renderChat();
+  // 바로 편집 모드로
+  setTimeout(() => startEdit({ stopPropagation: ()=>{} }, id), 50);
+}
+
+function sendMessage() {
+  const ta = $('mainInput');
+  const text = ta.value.trim();
+  if (!text) return;
+  messages.push({ id: Date.now(), type: 'sent', text });
+  ta.value = '';
+  ta.style.height = 'auto';
+  renderChat();
+  closePanel();
 }
 
 // ── API ──
@@ -718,7 +846,7 @@ async function callClaude(prompt) {
   });
 
   if (!res.ok) {
-    const e = await res.json().catch(() => ({}));
+    const e = await res.json().catch(()=>({}));
     throw new Error(e.error?.message || `오류 ${res.status}`);
   }
   const d = await res.json();
@@ -729,15 +857,12 @@ async function callClaude(prompt) {
 function spellPrompt(text) {
   return `당신은 한국어 맞춤법 및 문맥 교정 전문가입니다.
 아래 텍스트의 맞춤법·띄어쓰기를 교정하고, 문맥상 어색한 부분이 있으면 더 자연스러운 표현을 제안해주세요.
-
 반드시 아래 JSON 형식으로만 출력하세요. 마크다운이나 다른 텍스트는 절대 포함하지 마세요.
 
 {
   "spelling": {
     "corrected": "교정된 전체 문장",
-    "changes": [
-      { "original": "원래 표현", "fixed": "교정된 표현", "reason": "이유" }
-    ]
+    "changes": [{ "original": "원래 표현", "fixed": "교정된 표현", "reason": "이유" }]
   },
   "context": {
     "has_suggestion": true,
@@ -756,19 +881,19 @@ function replyPrompt(text) {
   const roles = store.getRoles();
   const hist  = store.getHistory().slice(-10);
 
-  let roleLines = '- 친근: 친구에게 말하듯 자연스럽고 가벼운 말투 (ㅋㅋ, ~야, ~어/아 사용 가능)\n- 공손: 격식체, 존댓말 (~습니다, ~요)';
+  let roleLines = '- 친근: 친구에게 말하듯 자연스럽고 가벼운 말투\n- 공손: 격식체, 존댓말 (~습니다, ~요)';
   roles.forEach(r => { roleLines += `\n- ${r.name}: ${r.guide}`; });
 
   let histSummary = '없음';
   if (hist.length) {
     const cnt = {};
-    hist.forEach(h => cnt[h.tone] = (cnt[h.tone] || 0) + 1);
+    hist.forEach(h => cnt[h.tone] = (cnt[h.tone]||0)+1);
     histSummary = Object.entries(cnt).sort((a,b)=>b[1]-a[1])
-      .map(([t,n]) => `${t} ${n}회`).join(', ');
+      .map(([t,n])=>`${t} ${n}회`).join(', ');
   }
 
   const tones = ['친근','공손',...roles.map(r=>r.name)];
-  const repliesTemplate = tones.map(t => `{"tone":"${t}","text":"답변 텍스트"}`).join(',\n    ');
+  const tmpl = tones.map(t=>`{"tone":"${t}","text":"답변"}`).join(',\n    ');
 
   return `당신은 한국어 커뮤니케이션 전문가입니다.
 아래 메시지에 대한 답변을 말투별로 생성해주세요.
@@ -779,16 +904,12 @@ ${roleLines}
 [사용자 과거 선택 패턴]
 ${histSummary}
 
-상대 메시지의 맥락(격식/비격식, 관계, 톤)을 분석해 각 말투별 답변을 생성하고,
-가장 적절한 순서를 suggested_order로 알려주세요. 과거 선택 패턴도 참고하세요.
-
+상대 메시지 맥락을 분석해 각 말투별 답변을 생성하고, 가장 적절한 순서를 suggested_order로 알려주세요.
 반드시 아래 JSON 형식으로만 출력하세요. 마크다운이나 다른 텍스트는 절대 포함하지 마세요.
 
 {
   "suggested_order": ${JSON.stringify(tones)},
-  "replies": [
-    ${repliesTemplate}
-  ]
+  "replies": [${tmpl}]
 }
 
 받은 메시지: ${text}`;
@@ -798,6 +919,9 @@ ${histSummary}
 function showLoading() {
   $('resultPanel').classList.add('visible');
   $('resultContent').innerHTML = `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
+      <button onclick="closePanel()" style="background:none;border:none;font-size:15px;color:#bbb;cursor:pointer;padding:0;line-height:1">✕</button>
+    </div>
     <div class="loading-wrap">
       <div class="spinner"></div>
       <span>AI가 분석 중입니다...</span>
@@ -805,67 +929,64 @@ function showLoading() {
 }
 
 function renderSpell(data, primary) {
-  const content = $('resultContent');
-
-  const diffs = (data.spelling.changes || []).map(c =>
+  const diffs = (data.spelling.changes||[]).map(c=>
     `<span class="diff-item"><s>${esc(c.original)}</s><span class="diff-arrow">→</span><strong>${esc(c.fixed)}</strong></span>`
   ).join('');
 
   const spellCard = `
-    <div class="result-card ${primary==='spell'?'primary':'dimmed'}" ${primary!=='spell'?'onclick="swapSpell(\'spell\')"':''}>
+    <div class="result-card ${primary==='spell'?'primary':'dimmed'}"
+         ${primary!=='spell'?'onclick="swapSpell(\'spell\')"':''}>
       <span class="card-tag tag-spell">맞춤법</span>
       <div class="card-actions">
         <button class="btn-apply" onclick="applyText('spell');event.stopPropagation()">적용</button>
         <button class="btn-dismiss" onclick="closePanel();event.stopPropagation()">✕</button>
       </div>
-      ${diffs ? `<div class="diff-row">${diffs}</div>` : ''}
+      ${diffs?`<div class="diff-row">${diffs}</div>`:''}
       <div class="card-body">${esc(data.spelling.corrected)}</div>
     </div>`;
 
   let ctxCard = '';
   if (data.context.has_suggestion) {
     ctxCard = `
-      <div class="result-card ${primary==='context'?'primary':'dimmed'}" ${primary!=='context'?'onclick="swapSpell(\'context\')"':''}>
+      <div class="result-card ${primary==='context'?'primary':'dimmed'}"
+           ${primary!=='context'?'onclick="swapSpell(\'context\')"':''}>
         <span class="card-tag tag-ctx">문맥수정</span>
         <div class="card-actions">
           <button class="btn-apply" onclick="applyText('context');event.stopPropagation()">적용</button>
           <button class="btn-dismiss" onclick="closePanel();event.stopPropagation()">✕</button>
         </div>
         <div class="card-body">${esc(data.context.suggestion)}</div>
-        ${data.context.reason ? `<div class="card-reason">${esc(data.context.reason)}</div>` : ''}
+        ${data.context.reason?`<div class="card-reason">${esc(data.context.reason)}</div>`:''}
       </div>`;
   }
 
-  content.innerHTML = `<div class="section-title">교정 결과</div>` +
-    (primary === 'spell' ? spellCard + ctxCard : ctxCard + spellCard);
-
+  $('resultContent').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="section-title" style="margin-bottom:0">교정 결과</div>
+      <button onclick="closePanel()" style="background:none;border:none;font-size:15px;color:#bbb;cursor:pointer;padding:0;line-height:1">✕</button>
+    </div>` +
+    (primary==='spell' ? spellCard+ctxCard : ctxCard+spellCard);
   window._spellData = data;
 }
 
 function renderReply(data) {
   const roles = store.getRoles();
-  const dotMap = {
-    '친근': '#4CAF50',
-    '공손': '#5C6BC0',
-  };
-  const extra = ['#FF7043','#FF8F00','#8E24AA','#00897B'];
-  roles.forEach((r,i) => { dotMap[r.name] = extra[i % extra.length]; });
+  const dotMap = { '친근':'#4CAF50', '공손':'#5C6BC0' };
+  const extra  = ['#FF7043','#FF8F00','#8E24AA','#00897B'];
+  roles.forEach((r,i)=>{ dotMap[r.name]=extra[i%extra.length]; });
 
-  const order = data.suggested_order || [];
-  const sorted = [...data.replies].sort((a,b) => {
-    const ia = order.indexOf(a.tone), ib = order.indexOf(b.tone);
-    if (ia < 0 && ib < 0) return 0;
-    if (ia < 0) return 1; if (ib < 0) return -1;
-    return ia - ib;
+  const order  = data.suggested_order||[];
+  const sorted = [...data.replies].sort((a,b)=>{
+    const ia=order.indexOf(a.tone), ib=order.indexOf(b.tone);
+    if(ia<0&&ib<0)return 0; if(ia<0)return 1; if(ib<0)return-1;
+    return ia-ib;
   });
 
-  window._replyData = sorted;
-
-  const chipsHtml = sorted.map((r,i) =>
+  const chipsHtml = sorted.map((r,i)=>
     `<button class="chip ${i===0?'active':''}" onclick="switchChip('${esc(r.tone)}',this)">${esc(r.tone)}</button>`
   ).join('') + `<button class="chip chip-add" onclick="openSettings()">+ 추가</button>`;
 
-  const cardsHtml = sorted.map((r,i) => `
+  const cardsHtml = sorted.map((r,i)=>`
     <div class="reply-card ${i===0?'selected':''}"
          data-tone="${esc(r.tone)}"
          data-text="${esc(r.text)}"
@@ -879,7 +1000,10 @@ function renderReply(data) {
     </div>`).join('');
 
   $('resultContent').innerHTML = `
-    <div class="section-title">답변 초안 — 카드를 선택하면 입력창에 삽입됩니다</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="section-title" style="margin-bottom:0">답변 초안 — 선택하면 입력창에 삽입됩니다</div>
+      <button onclick="closePanel()" style="background:none;border:none;font-size:15px;color:#bbb;cursor:pointer;padding:0;line-height:1">✕</button>
+    </div>
     <div class="chips-row">${chipsHtml}</div>
     <div id="replyCards">${cardsHtml}</div>`;
 }
@@ -887,75 +1011,86 @@ function renderReply(data) {
 // ── ACTIONS ──
 function swapSpell(newPrimary) {
   const d = window._spellData;
-  if (!d) return;
-  renderSpell(d, newPrimary);
+  if (d) renderSpell(d, newPrimary);
 }
 
 function applyText(type) {
   const d = window._spellData;
   if (!d) return;
-  const text = type === 'spell' ? d.spelling.corrected : d.context.suggestion;
-  if (text) { insertText(text); closePanel(); }
+  const text = type==='spell' ? d.spelling.corrected : d.context.suggestion;
+  if (text) {
+    $('mainInput').value = text;
+    autoResize($('mainInput'));
+    toast('입력창에 적용되었습니다', 'ok');
+    closePanel();
+  }
 }
 
 function closePanel() {
   $('resultPanel').classList.remove('visible');
-  document.querySelectorAll('.ai-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.ai-btn').forEach(b=>b.classList.remove('active'));
   window._spellData = null;
 }
 
 function switchChip(tone, el) {
-  document.querySelectorAll('.chips-row .chip').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.chips-row .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
-  document.querySelectorAll('#replyCards .reply-card').forEach(c => {
-    const match = c.dataset.tone === tone;
-    c.style.display = match ? 'flex' : 'none';
+  document.querySelectorAll('#replyCards .reply-card').forEach(c=>{
+    const match = c.dataset.tone===tone;
+    c.style.display = match?'flex':'none';
     c.classList.toggle('selected', match);
   });
 }
 
 function pickReply(el) {
   store.addHistory(el.dataset.tone, el.dataset.text);
-  insertText(el.dataset.text);
+  // 입력창에 삽입
+  $('mainInput').value = el.dataset.text;
+  autoResize($('mainInput'));
+  $('mainInput').focus();
+  toast('입력창에 삽입되었습니다', 'ok');
   closePanel();
 }
 
 // ── MAIN HANDLERS ──
 async function handleSpell(primary) {
-  const text = getCurrentParagraph();
-  if (!text) { toast('텍스트를 먼저 입력해주세요', 'err'); return; }
+  const ta = $('mainInput');
+  const pos = ta.selectionStart;
+  const before = ta.value.substring(0, pos);
+  const lines = before.split('\n');
+  const text = lines[lines.length - 1].trim();
+  if (!text) { toast('입력창에 텍스트를 먼저 입력해주세요', 'err'); return; }
 
-  document.querySelectorAll('.ai-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.ai-btn').forEach(b=>b.classList.remove('active'));
   $('btnSpell').classList.add('active');
   $('btnContext').classList.add('active');
 
   showLoading();
   try {
-    const raw = await callClaude(spellPrompt(text));
+    const raw  = await callClaude(spellPrompt(text));
     if (!raw) return;
     const data = JSON.parse(cleanJSON(raw));
     renderSpell(data, primary);
   } catch(e) {
-    $('resultContent').innerHTML = `<div class="loading-wrap" style="color:#c62828">⚠ ${esc(e.message)}</div>`;
+    $('resultContent').innerHTML=`<div class="loading-wrap" style="color:#c62828">⚠ ${esc(e.message)}</div>`;
     toast(e.message, 'err');
   }
 }
 
-async function handleReply() {
-  const text = getSelectedText();
-  if (!text) { toast('답변할 메시지를 드래그로 선택해주세요', 'err'); return; }
+async function handleReply(text) {
+  if (!text) { toast('상대 메시지를 먼저 선택해주세요', 'err'); return; }
 
-  document.querySelectorAll('.ai-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.ai-btn').forEach(b=>b.classList.remove('active'));
   $('btnReply').classList.add('active');
 
   showLoading();
   try {
-    const raw = await callClaude(replyPrompt(text));
+    const raw  = await callClaude(replyPrompt(text));
     if (!raw) return;
     const data = JSON.parse(cleanJSON(raw));
     renderReply(data);
   } catch(e) {
-    $('resultContent').innerHTML = `<div class="loading-wrap" style="color:#c62828">⚠ ${esc(e.message)}</div>`;
+    $('resultContent').innerHTML=`<div class="loading-wrap" style="color:#c62828">⚠ ${esc(e.message)}</div>`;
     toast(e.message, 'err');
   }
 }
@@ -967,55 +1102,89 @@ function openSettings() {
 }
 function closeSettings() {
   $('settingsModal').classList.remove('visible');
-  $('roleName').value = '';
-  $('roleGuide').value = '';
+  $('roleName').value=''; $('roleGuide').value='';
 }
 function renderRoles() {
   const roles = store.getRoles();
   $('rolesItems').innerHTML = roles.length
-    ? roles.map(r => `
+    ? roles.map(r=>`
         <div class="role-item">
           <div class="role-info">
             <div class="role-name">${esc(r.name)}</div>
             <div class="role-guide">${esc(r.guide)}</div>
           </div>
-          <button class="btn-del" onclick="deleteRole(${r.id})">삭제</button>
+          <button class="btn-del" style="background:#f0f0f0;color:#555;border-color:#ddd;margin-right:5px" onclick="editRole(${r.id})">편집</button>
+<button class="btn-del" onclick="deleteRole(${r.id})">삭제</button>
         </div>`).join('')
     : '<div style="font-size:12px;color:#ccc;padding:8px 0">아직 저장된 롤이 없습니다</div>';
 }
 function deleteRole(id) {
-  store.setRoles(store.getRoles().filter(r => r.id !== id));
+  store.setRoles(store.getRoles().filter(r=>r.id!==id));
   renderRoles();
   toast('삭제되었습니다');
 }
+function editRole(id) {
+  const role = store.getRoles().find(r => r.id === id);
+  if (!role) return;
+  $('roleName').value = role.name;
+  $('roleGuide').value = role.guide;
+  $('saveRoleBtn').dataset.editId = id;
+  $('saveRoleBtn').textContent = '수정 완료';
+}
 
-// ── EVENT LISTENERS ──
-$('btnSpell').addEventListener('click', () => handleSpell('spell'));
-$('btnContext').addEventListener('click', () => handleSpell('context'));
-$('btnReply').addEventListener('click', handleReply);
+// ── EVENTS ──
+$('btnSpell').addEventListener('click', ()=>handleSpell('spell'));
+$('btnContext').addEventListener('click', ()=>handleSpell('context'));
+$('btnReply').addEventListener('click', ()=>{
+  if (!activeReceivedId) { toast('상대 말풍선을 먼저 클릭해주세요', 'err'); return; }
+  const msg = messages.find(m=>m.id===activeReceivedId);
+  if (msg) handleReply(msg.text);
+});
+
+$('sendBtn').addEventListener('click', sendMessage);
+$('mainInput').addEventListener('keydown', e=>{
+  if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
 
 $('settingsBtn').addEventListener('click', openSettings);
 $('closeSettings').addEventListener('click', closeSettings);
-$('settingsModal').addEventListener('click', e => {
-  if (e.target === $('settingsModal')) closeSettings();
+$('settingsModal').addEventListener('click', e=>{
+  if (e.target===$('settingsModal')) closeSettings();
 });
-
 $('saveRoleBtn').addEventListener('click', () => {
   const name  = $('roleName').value.trim();
   const guide = $('roleGuide').value.trim();
-  if (!name)  { toast('이름을 입력해주세요', 'err'); return; }
-  if (!guide) { toast('말투 가이드를 입력해주세요', 'err'); return; }
+  if (!name)  { toast('이름을 입력해주세요','err'); return; }
+  if (!guide) { toast('말투 가이드를 입력해주세요','err'); return; }
 
+  const editId = $('saveRoleBtn').dataset.editId;
   const roles = store.getRoles();
-  roles.push({ id: Date.now(), name, guide });
+
+  if (editId) {
+    // 수정 모드
+    const idx = roles.findIndex(r => r.id === Number(editId));
+    if (idx !== -1) { roles[idx].name = name; roles[idx].guide = guide; }
+    delete $('saveRoleBtn').dataset.editId;
+    $('saveRoleBtn').textContent = '저장';
+    toast(`"${name}" 롤이 수정되었습니다`, 'ok');
+  } else {
+    // 추가 모드
+    roles.push({ id: Date.now(), name, guide });
+    toast(`"${name}" 롤이 저장되었습니다`, 'ok');
+  }
+
   store.setRoles(roles);
   $('roleName').value = '';
   $('roleGuide').value = '';
   renderRoles();
-  toast(`"${name}" 롤이 저장되었습니다`, 'ok');
-});
 
-$('apiKeyInput').addEventListener('change', e => {
+  // ② 실시간 칩 업데이트 — 답변 결과 패널 열려있으면 바로 반영
+  if ($('replyCards')) {
+    const activeMsg = messages.find(m => m.id === activeReceivedId);
+    if (activeMsg) handleReply(activeMsg.text);
+  }
+});
+$('apiKeyInput').addEventListener('change', e=>{
   localStorage.setItem('km_key', e.target.value.trim());
 });
 
@@ -1023,6 +1192,7 @@ $('apiKeyInput').addEventListener('change', e => {
 (function init() {
   const saved = localStorage.getItem('km_key');
   if (saved) $('apiKeyInput').value = saved;
+  renderChat();
 })();
 </script>
 </body>
